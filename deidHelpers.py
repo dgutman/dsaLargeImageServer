@@ -18,11 +18,17 @@ import large_image
 import config
 import shutil
 
+# Monkey patch libtiff to work on Apple Silicon (see https://github.com/pearu/pylibtiff/issues/178)
+import libtiff
+import ctypes
+libtiff.TIFFGetField.argtypes = [libtiff.TIFF, ctypes.c_uint32]
+libtiff.TIFFSetField.argtypes = [libtiff.TIFF, ctypes.c_uint32]
+
 ## NOTE: FLAG IS SET TO ALWAYS REMOVE CELL LABEL... THIS IS ON CONFIG.py
 
 
 valid_formats = ["aperio"]
-# import large_image_source_tiff.girder_source
+import large_image_source_tiff.girder_source
 from large_image_source_tiff import TiffFileTileSource
 
 # import xml.etree.ElementTree
@@ -118,20 +124,37 @@ class DeIdImageItem:
 ## TO DO:  Move these class definitions to a separate file
 image_item.ImageItem = DeIdImageItem
 
+def test():
+    sampleSlide = (
+        "./data/CMU-2-backup.svs"
+    )
+    print('Sample slide', sampleSlide)
+    ts = TiffFileTileSource(sampleSlide)
+    print('Created TiffFileTileSource')
+
 
 ## NOT SURE IF I HAVE TO HAVE THE HLEPER FUNCTIONS DECLARED ABOVE?
 ## This is based on the function redact_item from process.py
 def deid_workflow():
     sampleSlide = (
-        "data/TCGA-06-5408-01A-01-TS1.68665795-aac7-4a6d-9a14-c306bc941b26.svs"
+        "./data/CMU-2-backup.svs"
     )
+    print('Sample slide', sampleSlide)
+    print(os.listdir('./data'))
+    # return
 
     with tempfile.TemporaryDirectory(prefix="wsi_deid") as tempdir:
+        print('In tempdir')
 
-        ts = large_image.open(sampleSlide)
+        # ts = large_image.open(sampleSlide)
+        # print('ts created')
+        
         curItem = DeIdImageItem(sampleSlide)
+        print('Created DeIdImageItem')
 
         redactList = get_standard_redactions(curItem, "Iamacoolslidename.svs")
+        print('Redact list', redactList)
+        
         newTitle = get_generated_title(
             curItem
         )  # The newtitle is the filename without the extension
@@ -155,6 +178,7 @@ def deid_workflow():
             labelImage = redact_image_area(labelImage, label_geojson)
         if config.getConfig("add_title_to_label"):
             labelImage = add_title_to_image(labelImage, newTitle, False, item=curItem)
+            print('Added labelImage: ', labelImage)
         macroImage = None
         macro_geojson = redactList.get("images", {}).get("macro", {}).get("geojson")
         redact_square_default = "macro" not in redactList[
@@ -178,7 +202,7 @@ def deid_workflow():
             elif macro_geojson:
                 macroImage = redact_image_area(macroImage, macro_geojson)
         format = determine_format(tileSource)
-
+        print('Found format: ', format)
         if format not in ["aperio"]:
             return f"FORMAT NOT AVAILABLE FOR DEID YET: {format}"
 
@@ -214,8 +238,8 @@ def deid_workflow():
 
         for f in os.listdir(tempdir):
             fp = os.path.join(tempdir, f)
-            print(f"Copying file from {fp} to /app/data/{f}")
-            shutil.copy(fp, f"/app/data/{f}")
+            print(f"Copying file from {fp} to ./output/{f}")
+            shutil.copy(fp, f"./output/{f}")
 
         return file, info
 
@@ -312,20 +336,30 @@ def redact_format_aperio(item, tempdir, redactList, title, labelImage, macroImag
     tileSource = item.tileSource  ##MODDED
     sourcePath = tileSource._getLargeImagePath()
     logger.info("Redacting aperio file %s", sourcePath)
+    print(f"Redacting aperio file {sourcePath}")
     tiffinfo = tifftools.read_tiff(sourcePath)
+    print(f"Opened file using tifftools")
     ifds = tiffinfo["ifds"]
+    print(f"IFDs gotten")
     if redactList.get("area", {}).get("_wsi", {}).get("geojson"):
+        print(f"Calling redact_format_aperio_philips_redact_wsi")
         ifds = redact_format_aperio_philips_redact_wsi(
             tileSource, ifds, redactList["area"]["_wsi"]["geojson"], tempdir
         )
+        print(f"Returned from redact_format_aperio_philips_redact_wsi")
         ## ImageItem().removeThumbnailFiles(item) TBD
+    print(f"Trying aperio_value_list")
     aperioValues = aperio_value_list(item, redactList, title)
+    print(f"Aperio values {aperioValues}")
     imageDescription = "|".join(aperioValues)
     # We expect aperio to have the full resolution image in directory 0, the
     # thumbnail in directory 1, lower resolutions starting in 2, and label and
     # macro images in other directories.  Confirm this -- our tiff reader will
     # report the directories used for the full resolution.
+
+    print(f"Creating TiffFileTileSource")
     tiffSource = TiffFileTileSource(item._largeImagePath)
+    print(f"Created TiffFileTileSource")
     mainImageDir = [
         dir._directoryNum for dir in tiffSource._tiffDirectories[::-1] if dir
     ]
@@ -337,6 +371,7 @@ def redact_format_aperio(item, tempdir, redactList, title, labelImage, macroImag
         raise Exception("Aperio TIFF directories are not in the expected order.")
     firstAssociatedIdx = max(mainImageDir) + 1
     # Set new image description
+    print(f"Setting new image description")
     ifds[0]["tags"][tifftools.Tag.ImageDescription.value] = {
         "datatype": tifftools.Datatype.ASCII,
         "data": imageDescription,
@@ -539,7 +574,8 @@ def add_title_to_image(
             )
         except IOError:
             try:
-                imageDrawFont = PIL.ImageFont.truetype(size=int(fontSize * targetW))
+                print('Falling back to truetype with size' + str(int(fontSize * targetW)))
+                imageDrawFont = PIL.ImageFont.truetype("arial.ttf", size=int(fontSize * targetW))
             except IOError:
                 imageDrawFont = PIL.ImageFont.load_default()
         textL, textT, textR, textB = imageDrawFont.getbbox(title)
