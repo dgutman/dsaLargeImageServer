@@ -216,7 +216,9 @@ def determine_format(tileSource):
     :param tileSource: a large_image tile source.
     :returns: the vendor or None if unknown.
     """
+    
     metadata = tileSource.getInternalMetadata() or {}
+    print('metadata: ', metadata, 'tilesource: ', tileSource.name)
     if tileSource.name == "openslide":
         if metadata.get("openslide", {}).get("openslide.vendor") in (
             "aperio",

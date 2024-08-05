@@ -5,6 +5,7 @@ imagecodecs-numcodecs==2024.1.1
 jsonschema==4.22.0
 jsonschema-specifications==2023.12.1
 large-image==1.28.1
+large-image-source-openslide==1.28.1
 large-image-source-deepzoom==1.28.1
 large-image-source-dicom==1.28.1
 large-image-source-multi==1.28.1
@@ -15,3 +16,4 @@ large-image-source-test==1.28.1
 large-image-source-tifffile==1.28.1
 large-image-source-zarr==1.28.1
 girder_large_image
+pyvips
