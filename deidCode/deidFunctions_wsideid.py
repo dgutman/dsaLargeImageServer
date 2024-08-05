@@ -170,7 +170,7 @@ def get_deid_field(item, prefix=None):
     :param item: the item with data.
     :returns: the text field.
     """
-    # from . import __version__
+    from . import __version__
 
     if prefix and prefix.strip():
         if "DSA Redaction" in prefix:
@@ -216,7 +216,9 @@ def determine_format(tileSource):
     :param tileSource: a large_image tile source.
     :returns: the vendor or None if unknown.
     """
+
     metadata = tileSource.getInternalMetadata() or {}
+    print("metadata: ", metadata, "tilesource: ", tileSource.name)
     if tileSource.name == "openslide":
         if metadata.get("openslide", {}).get("openslide.vendor") in (
             "aperio",
@@ -812,7 +814,7 @@ def get_deid_field(item, prefix=None):
     :param item: the item with data.
     :returns: the text field.
     """
-    from . import __version__
+    # from . import __version__
 
     version = "BDSA Redaction %s" % __version__
     if prefix and prefix.strip():

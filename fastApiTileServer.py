@@ -13,13 +13,9 @@ import deidCode.deidHelpers as deid
 """A simple FASTAPI Rest Interface to serve tiles from a slide image
 Currently returns metadata about the tile, and can also return a tile
 Will be adding a macro and thumbnail endpoint soon
-* `/tile?z={z}&x={x}&y={y}&encoding=png`
 """
 
 app = FastAPI()  ## Initialize fastAPI Map
-
-# print("Running Test Deid workflow")
-# deid.deid_workflow()
 
 """ This should accept a filepath, but this must be made relative
 To the locations that the docker container can actually read
