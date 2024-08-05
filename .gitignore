@@ -1,3 +1,6 @@
 __pycache__
 *.tiff
 *.svs
+.pyenv/
+.wtf/
+.DS_Store

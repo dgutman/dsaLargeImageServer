@@ -11,7 +11,7 @@ logoImageFile = "/opt/nci-dsa-deid/nci_dsa_deid/NCI-logo-300x165.jpg"
 if os.path.isfile(logoImageFile):
     pass
 else:
-    logoImageFile = "./NCI-logo-300x165.jpg"
+    logoImageFile = "./assets/NCI-logo-300x165.jpg"
     ## During local testing the /opt path does not exist, so using local path
 
 

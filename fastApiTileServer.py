@@ -8,7 +8,7 @@ import math
 from large_image.exceptions import TileSourceXYZRangeError
 from large_image.tilesource.utilities import JSONDict
 import io
-import deidHelpers as deid
+import deidCode.deidHelpers as deid
 
 """A simple FASTAPI Rest Interface to serve tiles from a slide image
 Currently returns metadata about the tile, and can also return a tile
