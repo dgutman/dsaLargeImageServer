@@ -130,7 +130,8 @@ image_item.ImageItem = DeIdImageItem
 
 
 def test():
-    sampleSlide = "./data/CMU-2.svs"
+    sampleSlide = "./data/E22-02_ABETA_16.svs"
+    #" CMU-2.svs"
     print("Sample slide", sampleSlide)
     ts = TiffFileTileSource(sampleSlide)
     print("Created TiffFileTileSource")
@@ -139,7 +140,10 @@ def test():
 ## NOT SURE IF I HAVE TO HAVE THE HLEPER FUNCTIONS DECLARED ABOVE?
 ## This is based on the function redact_item from process.py
 def deid_workflow():
-    sampleSlide = "./data/CMU-2.svs"
+#    sampleSlide = "./data/CMU-2.svs"
+    sampleSlide = "./data/E22-02_ABETA_16.svs"
+
+#    sampleSlide = "./data/CMU-2.svs"
     print("Sample slide", sampleSlide)
     print(os.listdir("./data"))
     # return
